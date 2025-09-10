@@ -2,8 +2,14 @@
   <header>
     <h1>🚗 CarPro Kundenverwaltung</h1>
   </header>
-  
+
+  <nav class="toolbar">
+    <button (click)="showList.set(true)">Kundenliste</button>
+    <button (click)="showList.set(false)">Neuer Kunde</button>
+  </nav>
+
   <main>
-    <app-customer-list></app-customer-list>
+    <app-customer-list *ngIf="showList()"></app-customer-list>
+    <app-customer-form *ngIf="!showList()"></app-customer-form>
   </main>
 </div>

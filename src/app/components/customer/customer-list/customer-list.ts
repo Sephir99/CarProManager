@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Customer } from '../models/customer.model';
-import { CustomerService } from '../services/customer.service';
+import { Customer } from '../../../models/customer.model';
+import { CustomerService } from '../../../services/customer.service';
 import { AsyncPipe } from '@angular/common'
 @Component({
   selector: 'app-customer-list',
