@@ -50,9 +50,13 @@ export class CustomerService {
     return of(customer);
   }
 
-  addCustomer(customer: Customer): void {
-    this.customers.push(customer);
-    this.customersSubject.next(this.customers);
+  addCustomer(customer: Omit<Customer, 'customerId'>): void {
+    // Automatische ID-Generierung
+    const maxId = this.customers.length > 0 ? Math.max(...this.customers.map(c => c.customerId)) : 0;
+    const newCustomer: Customer = { ...customer, customerId: maxId + 1 };
+    
+    this.customers.push(newCustomer);
+    this.customersSubject.next([...this.customers]); // Spread für bessere Change Detection
   }
 
   updateCustomer(updatedCustomer: Customer): void {
@@ -67,4 +71,10 @@ export class CustomerService {
     this.customers = this.customers.filter(c => c.customerId !== id);
     this.customersSubject.next([...this.customers]);
   }
+
+  getNewsletterSubscribers(): Observable<Customer[]> {
+    const subscribers = this.customers.filter(c => c.newsletter);
+    return of(subscribers);
+  }
+  
 }
