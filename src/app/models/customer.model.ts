@@ -5,7 +5,7 @@ export interface Customer {
     email: string;
     phoneNumber?: string;
     street?: string;
-    zipCode?: string;
+    zipCode?: number;
     city?: string;
     newsletter: boolean;
   }
