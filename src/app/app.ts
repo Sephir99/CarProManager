@@ -12,4 +12,19 @@ import { CustomerForm } from './components/customer/customer-form/customer-form'
 export class App {
   protected readonly title = signal('CarProManager');
   showList = signal(true);
+
+  editId = signal(0);
+
+  // Wenn Bearbeiten geklickt
+  onEdit(id: number): void {
+    this.editId.set(id);
+    this.showList.set(false);
+  }
+
+  // Zurück zur Liste
+  onList(): void {
+    this.showList.set(true);
+    this.editId.set(0);
+  }
+
 }

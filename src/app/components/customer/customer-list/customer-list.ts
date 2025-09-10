@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Customer } from '../../../models/customer.model';
 import { CustomerService } from '../../../services/customer.service';
@@ -12,7 +12,8 @@ import { AsyncPipe } from '@angular/common'
 })
 export class CustomerList implements OnInit {
   customers$!: Observable<Customer[]>;
-
+  @Output() editCustomers = new EventEmitter<number>();
+  
   constructor(private customerService: CustomerService) {}
 
   ngOnInit(): void {
@@ -23,5 +24,9 @@ export class CustomerList implements OnInit {
     if (confirm('Sind Sie sicher, dass Sie diesen Kunden löschen möchten?')) {
       this.customerService.deleteCustomer(id);
     }
+  }
+
+  editCustomer(id: number): void {
+    this.editCustomers.emit(id);
   }
 }

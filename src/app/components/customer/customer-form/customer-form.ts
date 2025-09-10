@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { CustomerService } from '../../../services/customer.service';
@@ -11,8 +11,9 @@ import { Customer } from '../../../models/customer.model';
   templateUrl: './customer-form.html',
   styleUrls: ['./customer-form.css']
 })
-export class CustomerForm implements OnInit {
-  form!: FormGroup;  // erst hier deklariert
+export class CustomerForm implements OnInit, OnChanges {
+  @Input() editId = 0;
+  form!: FormGroup;  
 
   constructor(private fb: FormBuilder, private cs: CustomerService) {}
 
@@ -28,8 +29,31 @@ export class CustomerForm implements OnInit {
       city: ['', Validators.required],
       newsletter: [false]
     });
+
+    if (this.editId > 0) {
+        this.loadCustomer(this.editId);
+      }
   }
-  
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Sicherstellen, dass form existiert und editId sich geändert hat
+    if (changes['editId'] && this.form) {
+      const id = changes['editId'].currentValue;
+      if (id > 0) {
+        this.loadCustomer(id);
+      } else {
+        this.form.reset({ customerId: 0, newsletter: false });
+      }
+    }
+  }
+
+  private loadCustomer(id: number): void {
+    this.cs.getCustomerById(id).subscribe(c => {
+      if (c) {
+        this.form.patchValue(c);
+      }
+    });
+  }
 
   submit(): void {
     if (this.form.invalid) return;
@@ -47,5 +71,4 @@ export class CustomerForm implements OnInit {
     this.form.reset({ customerId: 0, newsletter: false });
     alert('Kunde gespeichert');
   }
-  
 }

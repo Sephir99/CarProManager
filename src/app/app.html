@@ -4,12 +4,21 @@
   </header>
 
   <nav class="toolbar">
-    <button (click)="showList.set(true)">Kundenliste</button>
-    <button (click)="showList.set(false)">Neuer Kunde</button>
+    <button (click)="onList()">Kundenliste</button>
+    <button (click)="showList.set(false); editId.set(0)">Neuen Kunden</button>
   </nav>
 
   <main>
-    <app-customer-list *ngIf="showList()"></app-customer-list>
-    <app-customer-form *ngIf="!showList()"></app-customer-form>
+    <!-- Kundenliste anzeigen, bindet auf editCustomer -->
+    <app-customer-list
+      *ngIf="showList()"
+      (editCustomers)="onEdit($event)">
+    </app-customer-list>
+
+    <!-- Formular anzeigen und editId übergeben -->
+    <app-customer-form
+      *ngIf="!showList()"
+      [editId]="editId()">
+    </app-customer-form>
   </main>
 </div>
