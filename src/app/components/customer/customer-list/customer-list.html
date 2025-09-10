@@ -1,6 +1,19 @@
 <div class="customer-container">
   <h2>Kundenliste</h2>
 
+  <div class="filter-panel">
+    <input type="text" placeholder="Nachname" [(ngModel)]="filter.lastName" />
+    <input type="text" placeholder="Kundennummer" [(ngModel)]="filter.customerId" />
+    <label>
+      <input type="checkbox" [(ngModel)]="filter.newsletter" />
+      Newsletter
+    </label>
+    <div class="actions">
+      <button (click)="exportCsv()">CSV exportieren</button>
+      <button (click)="applyFilter()">Filter anwenden</button>
+      <button (click)="resetFilter()">Filter zurücksetzen</button>
+    </div>
+  </div>
   <table class="customer-table">
     <thead>
       <tr>
