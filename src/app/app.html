@@ -3,37 +3,61 @@
     <h1>🚗 {{ getCurrentTitle() }}</h1>
   </header>
 
-  <!-- Hauptnavigation (neu) -->
+  <!-- Hauptnavigation -->
   <nav class="main-nav">
-    <button 
+    <button
       [class.active]="isCustomerSection()"
       (click)="showCustomers()">
       👥 Kunden
     </button>
-    <button 
+    <button
       [class.active]="isVehicleSection()"
       (click)="showVehicles()">
       🚗 Fahrzeuge
     </button>
+    <button
+      [class.active]="isContractSection()"
+      (click)="showContracts()">
+      🔖 Verträge
+    </button>
   </nav>
 
-  <!-- Ihre bestehende Toolbar (erweitert) -->
+  <!-- Toolbar -->
   <nav class="toolbar">
     <button (click)="onList()">{{ getListButtonText() }}</button>
-    <button (click)="showList.set(false); editId.set(0)">{{ getNewButtonText() }}</button>
+    <button
+      (click)="showList.set(false);
+               editId.set(0);
+               editContractId.set(0)">
+      {{ getNewButtonText() }}
+    </button>
   </nav>
 
   <main>
-    <!-- === KUNDEN-BEREICH (Ihr bestehender Code) === -->
+    <!-- Kundenbereich -->
     @if (isCustomerSection()) {
-      <!-- Kundenliste anzeigen -->
       @if (showList()) {
         <app-customer-list (editCustomer)="onEdit($event)"></app-customer-list>
       } @else {
         <app-customer-form [editId]="editId()"></app-customer-form>
       }
-    } @else {
+    }
+    <!-- Vertragsbereich -->
+    @else if (isContractSection()) {
+      @if (showList()) {
+        <app-contract-list
+          [customerId]="editId()"
+          (editContract)="onEditContract($event)">
+        </app-contract-list>
+      } @else {
+        <app-contract-form
+          [customerId]="editId()"
+          [editId]="editContractId()">
+        </app-contract-form>
+      }
+    }
     <!-- Fahrzeugbereich -->
+    @else {
       @if (showList()) {
         <app-vehicle-list (editVehicle)="onEdit($event)"></app-vehicle-list>
       } @else {
