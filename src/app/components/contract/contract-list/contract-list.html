@@ -1,0 +1,41 @@
+<div class="contract-container">
+  <h3>
+    @if (customerId > 0) {
+      Kaufverträge für Kunde {{ customerId }}
+    } @else {
+      Alle Kaufverträge
+    }
+  </h3>
+
+  <table class="contract-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Kunde</th>
+        <th>Fahrzeug</th>
+        <th>Datum</th>
+        <th>Preis</th>
+        <th>Aktionen</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (c of contracts$ | async; track c.contractId) {
+        <tr>
+          <td>{{ c.contractId }}</td>
+          <td>{{ c.customerId }}</td>
+          <td>{{ c.vehicleId }}</td>
+          <td>{{ c.date }}</td>
+          <td>{{ c.price | currency:'EUR' }}</td>
+          <td class="actions-cell">
+            <button class="btn-edit" (click)="edit(c.contractId)">✏️ Bearbeiten</button>
+            <button class="btn-delete" (click)="delete(c.contractId)">🗑️ Löschen</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  @if ((contracts$ | async)?.length === 0) {
+    <div class="no-data"><p>Keine Verträge gefunden.</p></div>
+  }
+</div>

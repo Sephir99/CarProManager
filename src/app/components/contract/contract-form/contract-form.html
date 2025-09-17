@@ -1,0 +1,51 @@
+<div class="form-container">
+  <h3>{{ editId > 0 ? 'Vertrag bearbeiten' : 'Neuen Vertrag' }}</h3>
+  <br/>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <input formControlName="contractId" type="hidden" />
+
+    <div class="form-row">
+      <label for="customerId">Kunde *</label>
+      <select id="customerId" formControlName="customerId"
+              [class.invalid]="isInvalid('customerId')">
+        <option [ngValue]="null">Bitte wählen</option>
+        <option *ngFor="let c of (customers$ | async)" [ngValue]="c.customerId">
+          {{ c.customerId }} – {{ c.lastName }}, {{ c.firstName }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label for="vehicleId">Fahrzeug *</label>
+      <select id="vehicleId" formControlName="vehicleId"
+              [class.invalid]="isInvalid('vehicleId')">
+        <option [ngValue]="null">Bitte wählen</option>
+        <option *ngFor="let v of (availableVehicles$ | async)" [ngValue]="v.id">
+          #{{ v.id }} – {{ v.make }} {{ v.model }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label for="date">Datum *</label>
+      <input id="date" formControlName="date" type="date"
+             [class.invalid]="isInvalid('date')" />
+    </div>
+
+    <div class="form-row">
+      <label for="price">Preis *</label>
+      <input id="price" formControlName="price" type="number"
+             [class.invalid]="isInvalid('price')" />
+    </div>
+
+    <div class="form-row">
+      <label for="notes">Notizen</label>
+      <textarea id="notes" formControlName="notes"></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" (click)="reset()">Abbrechen</button>
+      <button type="submit" [disabled]="form.invalid">Speichern</button>
+    </div>
+  </form>
+</div>

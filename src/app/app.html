@@ -1,24 +1,71 @@
 <div class="app-container">
   <header>
-    <h1>🚗 CarPro Kundenverwaltung</h1>
+  <div class="header-content">
+    <img src="assets/carprologoX.png" alt="CarProManager Logo" class="logo" />
+    <h1>{{ getCurrentTitle() }}</h1>
+  </div>
   </header>
 
+  <!-- Hauptnavigation -->
+  <nav class="main-nav">
+    <button
+      [class.active]="isCustomerSection()"
+      (click)="showCustomers()">
+      👥 Kunden
+    </button>
+    <button
+      [class.active]="isVehicleSection()"
+      (click)="showVehicles()">
+      🚗 Fahrzeuge
+    </button>
+    <button
+      [class.active]="isContractSection()"
+      (click)="showContracts()">
+      🔖 Verträge
+    </button>
+  </nav>
+
+  <!-- Toolbar -->
   <nav class="toolbar">
-    <button (click)="onList()">Kundenliste</button>
-    <button (click)="showList.set(false); editId.set(0)">Neuen Kunden</button>
+    <button (click)="onList()">{{ getListButtonText() }}</button>
+    <button
+      (click)="showList.set(false);
+               editId.set(0);
+               editContractId.set(0)">
+      {{ getNewButtonText() }}
+    </button>
   </nav>
 
   <main>
-    <!-- Kundenliste anzeigen, bindet auf editCustomer -->
-    <app-customer-list
-      *ngIf="showList()"
-      (editCustomers)="onEdit($event)">
-    </app-customer-list>
-
-    <!-- Formular anzeigen und editId übergeben -->
-    <app-customer-form
-      *ngIf="!showList()"
-      [editId]="editId()">
-    </app-customer-form>
+    <!-- Kundenbereich -->
+    @if (isCustomerSection()) {
+      @if (showList()) {
+        <app-customer-list (editCustomer)="onEdit($event)"></app-customer-list>
+      } @else {
+        <app-customer-form [editId]="editId()"></app-customer-form>
+      }
+    }
+    <!-- Vertragsbereich -->
+    @else if (isContractSection()) {
+      @if (showList()) {
+        <app-contract-list
+          [customerId]="editId()"
+          (editContract)="onEditContract($event)">
+        </app-contract-list>
+      } @else {
+        <app-contract-form
+          [customerId]="editId()"
+          [editId]="editContractId()">
+        </app-contract-form>
+      }
+    }
+    <!-- Fahrzeugbereich -->
+    @else {
+      @if (showList()) {
+        <app-vehicle-list (editVehicle)="onEdit($event)"></app-vehicle-list>
+      } @else {
+        <app-vehicle-form [editId]="editId()"></app-vehicle-form>
+      }
+    }
   </main>
 </div>

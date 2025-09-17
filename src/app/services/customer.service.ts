@@ -21,7 +21,7 @@ export class CustomerService {
         lastName: 'Fast',
         email: 'mike.fast@ProCar.com',
         phoneNumber: '012485123',
-        street: 'BigStreet',
+        street: 'BigStreet 123',
         zipCode: 12412,
         city: 'Brunswick',
         newsletter: false
@@ -32,7 +32,7 @@ export class CustomerService {
         lastName: 'Fastovic',
         email: 'faster.mike@ProCar.com',
         phoneNumber: '01215123',
-        street: 'SmallStreet',
+        street: 'SmallStreet 12',
         zipCode: 12413,
         city: 'Brunswaick',
         newsletter: true

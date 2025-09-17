@@ -1,0 +1,132 @@
+<div class="form-container">
+  <h2>{{ editId > 0 ? 'Fahrzeug bearbeiten' : 'Neues Fahrzeug hinzufügen' }}</h2>
+    <br/>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+
+    <!-- Versteckte ID -->
+    <input formControlName="id" type="hidden" />
+
+    <!-- Grunddaten -->
+    <div class="form-section">
+      <h3>Grunddaten</h3>
+      
+      <div class="form-row">
+        <label for="customerId">Kunden-ID *</label>
+        <input id="customerId" 
+               formControlName="customerId" 
+               type="number" 
+               [class.invalid]="isFieldInvalid('customerId')" />
+        <small class="error" *ngIf="isFieldInvalid('customerId')">
+          {{ getFieldError('customerId') }}
+        </small>
+      </div>
+
+      <div class="form-row">
+        <label for="make">Marke *</label>
+        <input id="make" 
+               formControlName="make" 
+               type="text" 
+               [class.invalid]="isFieldInvalid('make')" />
+        <small class="error" *ngIf="isFieldInvalid('make')">
+          {{ getFieldError('make') }}
+        </small>
+      </div>
+
+      <div class="form-row">
+        <label for="model">Modell *</label>
+        <input id="model" 
+               formControlName="model" 
+               type="text" 
+               [class.invalid]="isFieldInvalid('model')" />
+        <small class="error" *ngIf="isFieldInvalid('model')">
+          {{ getFieldError('model') }}
+        </small>
+      </div>
+
+      <div class="form-row">
+        <label for="initialRegistration">Erstzulassung</label>
+        <input id="initialRegistration" 
+               formControlName="initialRegistration" 
+               type="date" />
+      </div>
+
+      <div class="form-row">
+        <label for="color">Farbe</label>
+        <input id="color" 
+               formControlName="color" 
+               type="text" />
+      </div>
+
+      <div class="form-row">
+        <label for="status">Status *</label>
+        <select id="status" 
+                formControlName="status" 
+                [class.invalid]="isFieldInvalid('status')">
+          <option value="Verfügbar">Verfügbar</option>
+          <option value="Reserviert">Reserviert</option>
+          <option value="Verkauft">Verkauft</option>
+        </select>
+        <small class="error" *ngIf="isFieldInvalid('status')">
+          {{ getFieldError('status') }}
+        </small>
+      </div>
+    </div>
+
+    <!-- Ausstattung -->
+    <div class="form-section">
+      <h3>Ausstattung</h3>
+      
+      <!-- Vordefinierte Ausstattung -->
+      <div class="predefined-equipment">
+        <label>Häufige Ausstattungsmerkmale:</label>
+        <div class="equipment-buttons">
+          @for (equipment of availableEquipment; track equipment) {
+            <button type="button" 
+                    class="btn-export-csv" 
+                    (click)="addPredefinedEquipment(equipment)">
+              + {{ equipment }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Dynamische Ausstattungsliste -->
+      <div class="equipment-list" formArrayName="ausstattung">
+        @for (control of ausstattungArray.controls; track $index; let i = $index) {
+          <div class="equipment-item">
+            <input [formControlName]="i" 
+                   type="text" 
+                   placeholder="Ausstattungsmerkmal eingeben" 
+                   class="equipment-input" />
+            <button type="button" 
+                    class="btn-remove" 
+                    (click)="removeAusstattungItem(i)">
+              ✕
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- Ausstattung hinzufügen -->
+      <button type="button" 
+              class="btn-export-csv" 
+              (click)="addAusstattungItem()">
+        + Weiteres Merkmal hinzufügen
+      </button>
+    </div>
+
+    <!-- Aktions-Buttons -->
+    <div class="form-actions">
+      <button type="button" 
+              class="btn-cancel" 
+              (click)="resetForm()">
+        Abbrechen
+      </button>
+      <button type="submit" 
+              class="btn-submit" 
+              [disabled]="form.invalid">
+        {{ editId > 0 ? 'Aktualisieren' : 'Hinzufügen' }}
+      </button>
+    </div>
+  </form>
+</div>

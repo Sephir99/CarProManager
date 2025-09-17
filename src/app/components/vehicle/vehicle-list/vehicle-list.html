@@ -1,0 +1,84 @@
+
+<div class="vehicle-container">
+  <h2>Fahrzeugliste</h2>
+
+  <!-- Filter Panel -->
+  <div class="filter-panel">
+    <input type="text" placeholder="Fahrzeug-ID" [(ngModel)]="filter.id" />
+    <input type="text" placeholder="Marke" [(ngModel)]="filter.make" />
+    <input type="text" placeholder="Modell" [(ngModel)]="filter.model" />
+    <select [(ngModel)]="filter.status">
+      <option value="">Alle Status</option>
+      <option value="Verfügbar">Verfügbar</option>
+      <option value="Reserviert">Reserviert</option>
+      <option value="Verkauft">Verkauft</option>
+    </select>
+    <button class="btn-filter" (click)="applyFilter()">Filter anwenden</button>
+    <button class="btn-reset" (click)="resetFilter()">Zurücksetzen</button>
+  </div>
+
+  <!-- Export Buttons -->
+  <div class="actions">
+    <button class="btn-export-csv" (click)="exportCsv()">CSV exportieren</button>
+    <button class="btn-export-json" (click)="exportJson()">JSON exportieren</button>
+    <button class="btn-export-xml" (click)="exportXml()">XML exportieren</button>
+  </div>
+
+  <!-- Fahrzeug Tabelle -->
+  <table class="vehicle-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Marke</th>
+        <th>Modell</th>
+        <th>Erstzulassung</th>
+        <th>Farbe</th>
+        <th>Status</th>
+        <th>Ausstattung</th>
+        <th>Aktionen</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (vehicle of vehicles$ | async; track vehicle.id) {
+        <tr>
+          <td>{{ vehicle.id }}</td>
+          <td>{{ vehicle.make }}</td>
+          <td>{{ vehicle.model }}</td>
+          <td>{{ vehicle.initialRegistration || '-' }}</td>
+          <td>{{ vehicle.color || '-' }}</td>
+          <td>
+            <select class="status-select" 
+                    [value]="vehicle.status" 
+                    (change)="changeStatus(vehicle.id, $any($event.target).value)">
+              <option value="Verfügbar">Verfügbar</option>
+              <option value="Reserviert">Reserviert</option>
+              <option value="Verkauft">Verkauft</option>
+            </select>
+          </td>
+          <td class="equipment-cell">
+            <div class="equipment-tags">
+              @for (item of vehicle.ausstattung; track item) {
+                <span class="equipment-tag">{{ item }}</span>
+              }
+            </div>
+          </td>
+          <td class="actions-cell">
+            <button class="btn-edit" (click)="editVehicleClick(vehicle.id)">
+              ✏️ Bearbeiten
+            </button>
+            <button class="btn-delete" (click)="deleteVehicle(vehicle.id)">
+              🗑️ Löschen
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <!-- Keine Daten Meldung -->
+  @if ((vehicles$ | async)?.length === 0) {
+    <div class="no-data">
+      <p>Keine Fahrzeuge gefunden.</p>
+    </div>
+  }
+</div>

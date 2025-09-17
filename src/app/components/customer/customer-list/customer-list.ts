@@ -1,26 +1,23 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { map, Observable, of, tap } from 'rxjs';
+import { CommonModule, AsyncPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Observable, of, tap, map } from 'rxjs';
 import { Customer } from '../../../models/customer.model';
 import { CustomerService } from '../../../services/customer.service';
-import { AsyncPipe, CommonModule } from '@angular/common'
-import { FormsModule } from '@angular/forms';
+
 @Component({
   selector: 'app-customer-list',
-  templateUrl: './customer-list.html',
-  styleUrls: ['./customer-list.css'],
   standalone: true,
-  imports: [CommonModule, AsyncPipe, FormsModule]
+  imports: [CommonModule, AsyncPipe, FormsModule],
+  templateUrl: './customer-list.html',
+  styleUrls: ['./customer-list.css']
 })
 export class CustomerList implements OnInit {
   customers$!: Observable<Customer[]>;
   allCustomers: Customer[] = [];
-  filter = {
-    lastName: '',
-    customerId: '',
-    newsletter: false
-  };
-  @Output() editCustomers = new EventEmitter<number>();
-  
+  filter = { lastName: '', customerId: '', newsletter: false };
+  @Output() editCustomer = new EventEmitter<number>();
+
   constructor(private customerService: CustomerService) {}
 
   ngOnInit(): void {
@@ -54,31 +51,67 @@ export class CustomerList implements OnInit {
   deleteCustomer(id: number): void {
     if (confirm('Sind Sie sicher, dass Sie diesen Kunden löschen möchten?')) {
       this.customerService.deleteCustomer(id);
-      // Aktualisiere lokale Liste
       this.allCustomers = this.allCustomers.filter(c => c.customerId !== id);
       this.customers$ = of(this.allCustomers);
     }
   }
 
-
-  editCustomer(id: number): void {
-    this.editCustomers.emit(id);
+  editCustomerClick(id: number): void {
+    this.editCustomer.emit(id);
   }
 
   exportCsv(): void {
     const header = ['customerId', 'firstName', 'lastName', 'email', 'phoneNumber', 'street', 'zipCode', 'city', 'newsletter'];
-    this.customers$.pipe(tap(), map(list => {
-      const csvRows = [
+    this.customers$.pipe(map(list => {
+      const rows = [
         header.join(';'),
-        ...list.map(c => header.map(field => `"${(c as any)[field] || ''}"`).join(';'))
+        ...list.map(c => header.map(f => `"${(c as any)[f] || ''}"`).join(';'))
       ];
-      const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'kunden-export.csv';
-      link.click();
-      window.URL.revokeObjectURL(url);
-    })).subscribe();
+      return rows.join('\n');
+    })).subscribe(csv => {
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'kunden-export.csv'; a.click();
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  exportJson(): void {
+    this.customers$.pipe(map(list => JSON.stringify(list, null, 2)))
+      .subscribe(json => {
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'kunden-export.json'; a.click();
+        URL.revokeObjectURL(url);
+      });
+  }
+
+  exportXml(): void {
+    this.customers$.pipe(map(list => {
+      let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<customers>\n';
+      list.forEach(c => {
+        xml += '  <customer>\n';
+        xml += `    <customerId>${c.customerId}</customerId>\n`;
+        xml += `    <firstName>${c.firstName}</firstName>\n`;
+        xml += `    <lastName>${c.lastName}</lastName>\n`;
+        xml += `    <email>${c.email}</email>\n`;
+        xml += `    <phoneNumber>${c.phoneNumber || ''}</phoneNumber>\n`;
+        xml += `    <street>${c.street || ''}</street>\n`;
+        xml += `    <zipCode>${c.zipCode || ''}</zipCode>\n`;
+        xml += `    <city>${c.city || ''}</city>\n`;
+        xml += `    <newsletter>${c.newsletter}</newsletter>\n`;
+        xml += '  </customer>\n';
+      });
+      xml += '</customers>';
+      return xml;
+    })).subscribe(xml => {
+      const blob = new Blob([xml], { type: 'application/xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'kunden-export.xml'; a.click();
+      URL.revokeObjectURL(url);
+    });
   }
 }
