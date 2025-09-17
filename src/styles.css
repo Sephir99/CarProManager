@@ -1,1 +1,291 @@
-/* You can add global styles to this file, and also import other style files */
+/* styles.css */
+
+/* 1. Farbpalette & Variablen */
+:root {
+  --bg: #ffffff;
+  --fg: #111111;
+  --muted: #555555;
+  --border: #e0e0e0;
+  --radius: 4px;
+  --space: 16px;
+  --transition: 0.2s;
+}
+
+/* 2. Reset & Basis */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.5;
+}
+
+/* 3. Header with Logo */
+header {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: var(--space);
+}
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space);
+}
+.logo {
+  height: 40px;
+}
+header h1 {
+  font-size: 1.75rem;
+  font-weight: 400;
+}
+
+/* 4. Navigation & Toolbar */
+.main-nav,
+.toolbar {
+  display: flex;
+  justify-content: center;
+  background: var(--bg);
+  padding: calc(var(--space)/2) var(--space);
+  gap: var(--space);
+}
+.main-nav button,
+.toolbar button,
+.btn-filter,
+.btn-reset,
+.btn-export-csv,
+.btn-export-xml,
+.btn-export-json {
+  background: none;
+  border: 1px solid var(--fg);
+  color: var(--fg);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition);
+}
+.main-nav button:hover,
+.main-nav button.active,
+.toolbar button:hover,
+.btn-filter:hover,
+.btn-reset:hover,
+.btn-export-csv:hover,
+.btn-export-xml:hover,
+.btn-export-json:hover {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+/* 5. Container */
+.container,
+.customer-container,
+.vehicle-container,
+.contract-container,
+.form-container {
+  background: var(--bg);
+  margin: var(--space) auto;
+  max-width: 1200px;
+  padding: var(--space);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* 6. Filter Panel */
+.filter-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space);
+  margin-bottom: var(--space);
+}
+.filter-panel input,
+.filter-panel select {
+  flex: 1 1 200px;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* 7. Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--space);
+}
+th,
+td {
+  padding: calc(var(--space)/2);
+  border-bottom: 1px solid var(--border);
+}
+th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--muted);
+}
+tr:nth-child(even) {
+  background: #f9f9f9;
+}
+tr:hover {
+  background: #ececec;
+}
+.actions-cell button {
+  border: none;
+  background: var(--fg);
+  color: var(--bg);
+  padding: 0.25rem 0.5rem;
+  margin-right: calc(var(--space)/4);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+}
+.btn-edit:hover {
+  background: #8b8080;
+}
+.btn-delete {
+  background: #a00;
+}
+.btn-delete:hover {
+  background: #800;
+}
+
+/* 8. Forms */
+.form-row {
+  margin-bottom: var(--space);
+}
+.form-row label {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+.form-row.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--fg);
+  box-shadow: 0 0 0 3px rgba(17,17,17,0.1);
+}
+
+/* 9. Actions Groups */
+.form-actions {
+  display: flex;
+  gap: var(--space);
+  margin-top: var(--space);
+}
+.form-actions button {
+  border: 1px solid var(--fg);
+  background: none;
+  color: var(--fg);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition);
+}
+.form-actions.customer,
+.form-actions.vehicle,
+.form-actions.contract {
+  justify-content: space-between;
+}
+.form-actions.customer button,
+.form-actions.vehicle button,
+.form-actions.contract button {
+  flex: 1;
+  max-width: 140px;
+}
+.form-actions.contract {
+  justify-content: center;
+}
+button[type="submit"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 10. Export Buttons */
+.btn-export,
+.btn-export-csv,
+.btn-export-xml,
+.btn-export-json {
+  border: 2px solid var(--fg);
+  margin-right: calc(var(--space)/2);
+  font-weight: 500;
+}
+.btn-export:hover,
+.btn-export-csv:hover,
+.btn-export-xml:hover,
+.btn-export-json:hover {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+/* 11. Equipment Tags */
+.vehicle-table .equipment-cell,
+.contract-table .equipment-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.vehicle-table .equipment-tag,
+.contract-table .equipment-tag {
+  background: none;
+  border: 1px solid var(--fg);
+  color: var(--fg);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+}
+
+/* 12. No Data */
+.no-data {
+  text-align: center;
+  color: var(--muted);
+  padding: var(--space);
+}
+
+/* 13. Headings */
+h2,
+h3 {
+  margin-bottom: calc(var(--space)/2);
+  color: var(--fg);
+  font-weight: 350;
+}
+
+/* 14. Responsive */
+@media (max-width: 768px) {
+  .main-nav,
+  .toolbar,
+  .filter-panel {
+    flex-direction: column;
+  }
+  .actions-cell button {
+    margin-bottom: calc(var(--space)/4);
+  }
+}
+
+/* Submit-Buttons immer rechts */
+.form-actions {
+  display: flex;
+  gap: var(--space);
+  margin-top: var(--space);
+  justify-content: flex-start; /* Standard: links beginnen */
+}
+
+/* Nur Submit-Buttons nach rechts schieben */
+.form-actions button[type="submit"] {
+  margin-left: auto;
+}

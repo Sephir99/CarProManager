@@ -1,6 +1,7 @@
 <!-- customer-form.html -->
 <div class="form-container">
     <h2>Kunde hinzufügen / bearbeiten</h2>
+    <br/>
     <form [formGroup]="form" (ngSubmit)="submit()">
   
       <!-- customerId wird versteckt, bleibt internal -->
@@ -41,14 +42,12 @@
         <input id="city" formControlName="city" type="text" />
       </div>
   
-      <div class="form-row">
-        <label>
-          <input formControlName="newsletter" type="checkbox" />
-          Newsletter abonnieren
-        </label>
+      <div class="">
+        <label for="newsletter">Newsletter abonnieren</label>
+        <input id="newsletter" formControlName="newsletter" type="checkbox" />
       </div>
   
-      <div class="buttons">
+      <div class="form-actions">
         <button type="button" (click)="form.reset({ customerId: 0, newsletter: false })">
           Eingabe zurücksetzen
         </button>

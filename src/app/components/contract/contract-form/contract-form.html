@@ -1,5 +1,6 @@
-<div class="contract-form-container">
+<div class="form-container">
   <h3>{{ editId > 0 ? 'Vertrag bearbeiten' : 'Neuen Vertrag' }}</h3>
+  <br/>
   <form [formGroup]="form" (ngSubmit)="submit()">
     <input formControlName="contractId" type="hidden" />
 

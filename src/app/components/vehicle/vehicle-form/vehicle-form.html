@@ -1,6 +1,6 @@
 <div class="form-container">
   <h2>{{ editId > 0 ? 'Fahrzeug bearbeiten' : 'Neues Fahrzeug hinzufügen' }}</h2>
-  
+    <br/>
   <form [formGroup]="form" (ngSubmit)="submit()">
 
     <!-- Versteckte ID -->
@@ -82,7 +82,7 @@
         <div class="equipment-buttons">
           @for (equipment of availableEquipment; track equipment) {
             <button type="button" 
-                    class="btn-equipment" 
+                    class="btn-export-csv" 
                     (click)="addPredefinedEquipment(equipment)">
               + {{ equipment }}
             </button>
@@ -109,7 +109,7 @@
 
       <!-- Ausstattung hinzufügen -->
       <button type="button" 
-              class="btn-add-equipment" 
+              class="btn-export-csv" 
               (click)="addAusstattungItem()">
         + Weiteres Merkmal hinzufügen
       </button>

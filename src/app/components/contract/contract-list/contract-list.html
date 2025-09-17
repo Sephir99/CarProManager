@@ -27,8 +27,8 @@
           <td>{{ c.date }}</td>
           <td>{{ c.price | currency:'EUR' }}</td>
           <td class="actions-cell">
-            <button class="btn-edit" (click)="edit(c.contractId)">✏️</button>
-            <button class="btn-delete" (click)="delete(c.contractId)">🗑️</button>
+            <button class="btn-edit" (click)="edit(c.contractId)">✏️ Bearbeiten</button>
+            <button class="btn-delete" (click)="delete(c.contractId)">🗑️ Löschen</button>
           </td>
         </tr>
       }
