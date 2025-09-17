@@ -1,24 +1,44 @@
 <div class="app-container">
   <header>
-    <h1>🚗 CarPro Kundenverwaltung</h1>
+    <h1>🚗 {{ getCurrentTitle() }}</h1>
   </header>
 
+  <!-- Hauptnavigation (neu) -->
+  <nav class="main-nav">
+    <button 
+      [class.active]="isCustomerSection()"
+      (click)="showCustomers()">
+      👥 Kunden
+    </button>
+    <button 
+      [class.active]="isVehicleSection()"
+      (click)="showVehicles()">
+      🚗 Fahrzeuge
+    </button>
+  </nav>
+
+  <!-- Ihre bestehende Toolbar (erweitert) -->
   <nav class="toolbar">
-    <button (click)="onList()">Kundenliste</button>
-    <button (click)="showList.set(false); editId.set(0)">Neuen Kunden</button>
+    <button (click)="onList()">{{ getListButtonText() }}</button>
+    <button (click)="showList.set(false); editId.set(0)">{{ getNewButtonText() }}</button>
   </nav>
 
   <main>
-    <!-- Kundenliste anzeigen, bindet auf editCustomer -->
-    <app-customer-list
-      *ngIf="showList()"
-      (editCustomers)="onEdit($event)">
-    </app-customer-list>
-
-    <!-- Formular anzeigen und editId übergeben -->
-    <app-customer-form
-      *ngIf="!showList()"
-      [editId]="editId()">
-    </app-customer-form>
+    <!-- === KUNDEN-BEREICH (Ihr bestehender Code) === -->
+    @if (isCustomerSection()) {
+      <!-- Kundenliste anzeigen -->
+      @if (showList()) {
+        <app-customer-list (editCustomer)="onEdit($event)"></app-customer-list>
+      } @else {
+        <app-customer-form [editId]="editId()"></app-customer-form>
+      }
+    } @else {
+    <!-- Fahrzeugbereich -->
+      @if (showList()) {
+        <app-vehicle-list (editVehicle)="onEdit($event)"></app-vehicle-list>
+      } @else {
+        <app-vehicle-form [editId]="editId()"></app-vehicle-form>
+      }
+    }
   </main>
 </div>

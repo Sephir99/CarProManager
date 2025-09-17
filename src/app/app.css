@@ -39,4 +39,50 @@
 .toolbar button:hover {
   background-color: #1565c0;
 }
+
+.main-nav {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  background-color: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0 20px;
+}
+
+.main-nav button {
+  background: none;
+  border: none;
+  padding: 15px 30px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  border-bottom: 3px solid transparent;
+  color: #666;
+}
+
+.main-nav button:hover {
+  background-color: #f5f5f5;
+  color: #1976d2;
+}
+
+.main-nav button.active {
+  color: #1976d2;
+  border-bottom-color: #1976d2;
+  background-color: #f8f9fa;
+}
+
+.toolbar {
+  border-bottom: 2px solid #1976d2; 
+}
+
+@media (max-width: 768px) {
+  .main-nav {
+    padding: 0 10px;
+  }
   
+  .main-nav button {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+}

@@ -4,16 +4,20 @@
   <div class="filter-panel">
     <input type="text" placeholder="Nachname" [(ngModel)]="filter.lastName" />
     <input type="text" placeholder="Kundennummer" [(ngModel)]="filter.customerId" />
-    <label>
-      <input type="checkbox" [(ngModel)]="filter.newsletter" />
-      Newsletter
-    </label>
-    <div class="actions">
-      <button (click)="exportCsv()">CSV exportieren</button>
-      <button (click)="applyFilter()">Filter anwenden</button>
-      <button (click)="resetFilter()">Filter zurücksetzen</button>
-    </div>
+    <select [(ngModel)]="filter.newsletter">
+      <option [ngValue]="false">Alle</option>
+      <option [ngValue]="true">Newsletter</option>
+    </select>
+    <button class="btn-filter" (click)="applyFilter()">Filter anwenden</button>
+    <button class="btn-reset" (click)="resetFilter()">Zurücksetzen</button>
   </div>
+
+  <div class="actions">
+    <button class="btn-export" (click)="exportCsv()">CSV exportieren</button>
+    <button class="btn-export" (click)="exportJson()">JSON exportieren</button>
+    <button class="btn-export" (click)="exportXml()">XML exportieren</button>
+  </div>
+
   <table class="customer-table">
     <thead>
       <tr>
@@ -36,11 +40,10 @@
             </span>
           </td>
           <td class="actions-cell">
-            <button class="btn-edit" (click)="editCustomer(customer.customerId)">
+            <button class="btn-edit" (click)="editCustomerClick(customer.customerId)">
               ✏️ Bearbeiten
             </button>
-            <button class="btn-delete"
-                    (click)="deleteCustomer(customer.customerId)">
+            <button class="btn-delete" (click)="deleteCustomer(customer.customerId)">
               🗑️ Löschen
             </button>
           </td>
@@ -48,4 +51,8 @@
       }
     </tbody>
   </table>
+
+  @if ((customers$ | async)?.length === 0) {
+    <div class="no-data"><p>Keine Kunden gefunden.</p></div>
+  }
 </div>

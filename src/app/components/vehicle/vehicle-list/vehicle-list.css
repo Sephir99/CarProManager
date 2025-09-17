@@ -1,4 +1,5 @@
-.customer-container {
+
+.vehicle-container {
   padding: 20px;
   max-width: 1400px;
   margin: 0 auto;
@@ -65,46 +66,54 @@
   background-color: #45a049;
 }
 
-.customer-table {
+.vehicle-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.customer-table th,
-.customer-table td {
+.vehicle-table th,
+.vehicle-table td {
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid #ddd;
 }
 
-.customer-table th {
+.vehicle-table th {
   background-color: #f5f5f5;
   font-weight: bold;
   color: #333;
 }
 
-.customer-table tr:hover {
+.vehicle-table tr:hover {
   background-color: #f9f9f9;
 }
 
-.badge-yes {
-  background-color: #4caf50;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: bold;
+.status-select {
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
 }
 
-.badge-no {
-  background-color: #f44336;
-  color: white;
-  padding: 4px 8px;
+.equipment-cell {
+  max-width: 200px;
+}
+
+.equipment-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.equipment-tag {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  padding: 2px 6px;
   border-radius: 12px;
-  font-size: 12px;
-  font-weight: bold;
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 .actions-cell {
@@ -155,7 +164,12 @@ h2 {
   .filter-panel {
     flex-direction: column;
   }
-  .customer-table {
+  
+  .vehicle-table {
     font-size: 12px;
+  }
+  
+  .equipment-cell {
+    max-width: 150px;
   }
 }
