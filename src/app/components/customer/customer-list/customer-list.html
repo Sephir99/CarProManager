@@ -1,0 +1,51 @@
+<div class="customer-container">
+  <h2>Kundenliste</h2>
+
+  <div class="filter-panel">
+    <input type="text" placeholder="Nachname" [(ngModel)]="filter.lastName" />
+    <input type="text" placeholder="Kundennummer" [(ngModel)]="filter.customerId" />
+    <label>
+      <input type="checkbox" [(ngModel)]="filter.newsletter" />
+      Newsletter
+    </label>
+    <div class="actions">
+      <button (click)="exportCsv()">CSV exportieren</button>
+      <button (click)="applyFilter()">Filter anwenden</button>
+      <button (click)="resetFilter()">Filter zurücksetzen</button>
+    </div>
+  </div>
+  <table class="customer-table">
+    <thead>
+      <tr>
+        <th>ID</th><th>Vorname</th><th>Nachname</th><th>Email</th>
+        <th>Telefon</th><th>Stadt</th><th>Newsletter</th><th>Aktionen</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (customer of customers$ | async; track customer.customerId) {
+        <tr>
+          <td>{{ customer.customerId }}</td>
+          <td>{{ customer.firstName }}</td>
+          <td>{{ customer.lastName }}</td>
+          <td>{{ customer.email }}</td>
+          <td>{{ customer.phoneNumber || '-' }}</td>
+          <td>{{ customer.city || '-' }}</td>
+          <td>
+            <span [class]="customer.newsletter ? 'badge-yes' : 'badge-no'">
+              {{ customer.newsletter ? 'Ja' : 'Nein' }}
+            </span>
+          </td>
+          <td class="actions-cell">
+            <button class="btn-edit" (click)="editCustomer(customer.customerId)">
+              ✏️ Bearbeiten
+            </button>
+            <button class="btn-delete"
+                    (click)="deleteCustomer(customer.customerId)">
+              🗑️ Löschen
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

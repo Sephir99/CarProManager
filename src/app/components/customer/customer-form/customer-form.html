@@ -1,0 +1,61 @@
+<!-- customer-form.html -->
+<div class="form-container">
+    <h2>Kunde hinzufügen / bearbeiten</h2>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+  
+      <!-- customerId wird versteckt, bleibt internal -->
+      <input formControlName="customerId" type="hidden" />
+  
+      <div class="form-row">
+        <label for="firstName">Vorname *</label>
+        <input id="firstName" formControlName="firstName" type="text" />
+      </div>
+  
+      <div class="form-row">
+        <label for="lastName">Nachname *</label>
+        <input id="lastName" formControlName="lastName" type="text" />
+      </div>
+  
+      <div class="form-row">
+        <label for="email">E-Mail *</label>
+        <input id="email" formControlName="email" type="email" />
+      </div>
+  
+      <div class="form-row">
+        <label for="phoneNumber">Telefon *</label>
+        <input id="phoneNumber" formControlName="phoneNumber" type="text" />
+      </div>
+  
+      <div class="form-row">
+        <label for="street">Straße *</label>
+        <input id="street" formControlName="street" type="text" />
+      </div>
+  
+      <div class="form-row">
+        <label for="zipCode">Postleitzahl *</label>
+        <input id="zipCode" formControlName="zipCode" type="number" />
+      </div>
+  
+      <div class="form-row">
+        <label for="city">Stadt *</label>
+        <input id="city" formControlName="city" type="text" />
+      </div>
+  
+      <div class="form-row">
+        <label>
+          <input formControlName="newsletter" type="checkbox" />
+          Newsletter abonnieren
+        </label>
+      </div>
+  
+      <div class="buttons">
+        <button type="button" (click)="form.reset({ customerId: 0, newsletter: false })">
+          Eingabe zurücksetzen
+        </button>
+        <button type="submit" [disabled]="form.invalid">
+          Speichern
+        </button>
+      </div>
+    </form>
+  </div>
+  
