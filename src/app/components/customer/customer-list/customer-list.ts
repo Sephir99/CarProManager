@@ -15,7 +15,13 @@ import { CustomerService } from '../../../services/customer.service';
 export class CustomerList implements OnInit {
   customers$!: Observable<Customer[]>;
   allCustomers: Customer[] = [];
-  filter = { lastName: '', customerId: '', newsletter: false };
+  filter = { 
+    customerId: '', 
+    lastName: '', 
+    email: '', 
+    city: '', 
+    newsletter: '' 
+  };
   @Output() editCustomer = new EventEmitter<number>();
 
   constructor(private customerService: CustomerService) {}
@@ -29,22 +35,35 @@ export class CustomerList implements OnInit {
 
   applyFilter(): void {
     const filtered = this.allCustomers.filter(c => {
-      const matchesLastName = this.filter.lastName
-        ? c.lastName.toLowerCase().includes(this.filter.lastName.toLowerCase())
-        : true;
       const matchesId = this.filter.customerId
         ? c.customerId === +this.filter.customerId
         : true;
-      const matchesNewsletter = this.filter.newsletter
-        ? c.newsletter
+      const matchesLastName = this.filter.lastName
+        ? c.lastName.toLowerCase().includes(this.filter.lastName.toLowerCase())
         : true;
-      return matchesLastName && matchesId && matchesNewsletter;
+      const matchesEmail = this.filter.email
+        ? c.email.toLowerCase().includes(this.filter.email.toLowerCase())
+        : true;
+      const matchesCity = this.filter.city
+        ? (c.city || '').toLowerCase().includes(this.filter.city.toLowerCase())
+        : true;
+      const matchesNewsletter = this.filter.newsletter
+        ? c.newsletter === (this.filter.newsletter === 'true')
+        : true;
+      
+      return matchesId && matchesLastName && matchesEmail && matchesCity && matchesNewsletter;
     });
     this.customers$ = of(filtered);
   }
 
   resetFilter(): void {
-    this.filter = { lastName: '', customerId: '', newsletter: false };
+    this.filter = { 
+      customerId: '', 
+      lastName: '', 
+      email: '', 
+      city: '', 
+      newsletter: '' 
+    };
     this.customers$ = of(this.allCustomers);
   }
 

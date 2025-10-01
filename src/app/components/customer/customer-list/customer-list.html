@@ -2,11 +2,14 @@
   <h2>Kundenliste</h2>
 
   <div class="filter-panel">
-    <input type="text" placeholder="Nachname" [(ngModel)]="filter.lastName" />
     <input type="text" placeholder="Kundennummer" [(ngModel)]="filter.customerId" />
+    <input type="text" placeholder="Nachname" [(ngModel)]="filter.lastName" />
+    <input type="text" placeholder="E-Mail" [(ngModel)]="filter.email" />
+    <input type="text" placeholder="Stadt" [(ngModel)]="filter.city" />
     <select [(ngModel)]="filter.newsletter">
-      <option [ngValue]="false">Alle</option>
-      <option [ngValue]="true">Newsletter</option>
+      <option value="">Alle</option>
+      <option value="true">Newsletter: Ja</option>
+      <option value="false">Newsletter: Nein</option>
     </select>
     <button class="btn-filter" (click)="applyFilter()">Filter anwenden</button>
     <button class="btn-reset" (click)="resetFilter()">Zurücksetzen</button>
@@ -26,7 +29,7 @@
       <th>Nachname</th>
       <th>Email</th>
       <th>Telefon</th>
-      <th>Adresse</th>      <!-- neue Spalte -->
+      <th>Adresse</th>
       <th>Newsletter</th>
       <th>Aktionen</th>
     </tr>
@@ -61,7 +64,6 @@
     }
   </tbody>
 </table>
-
 
   @if ((customers$ | async)?.length === 0) {
     <div class="no-data"><p>Keine Kunden gefunden.</p></div>
