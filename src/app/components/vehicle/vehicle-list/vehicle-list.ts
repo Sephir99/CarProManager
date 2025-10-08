@@ -1,4 +1,3 @@
-
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -21,6 +20,7 @@ export class VehicleList implements OnInit {
     id: '', 
     make: '', 
     model: '', 
+    color: '',
     status: '' as '' | 'Verfügbar' | 'Reserviert' | 'Verkauft'
   };
 
@@ -46,17 +46,20 @@ export class VehicleList implements OnInit {
       const matchesModel = this.filter.model
         ? v.model.toLowerCase().includes(this.filter.model.toLowerCase())
         : true;
+      const matchesColor = this.filter.color
+        ? (v.color || '').toLowerCase().includes(this.filter.color.toLowerCase())
+        : true;
       const matchesStatus = this.filter.status
         ? v.status === this.filter.status
         : true;
       
-      return matchesId && matchesMake && matchesModel && matchesStatus;
+      return matchesId && matchesMake && matchesModel && matchesColor && matchesStatus;
     });
     this.vehicles$ = of(filtered);
   }
 
   resetFilter(): void {
-    this.filter = { id: '', make: '', model: '', status: '' };
+    this.filter = { id: '', make: '', model: '', color: '', status: '' };
     this.vehicles$ = of(this.allVehicles);
   }
 
