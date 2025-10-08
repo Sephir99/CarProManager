@@ -1,7 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonModule, AsyncPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Observable, of, tap, map } from 'rxjs';
+import { Observable, of, map } from 'rxjs';
 import { Customer } from '../../../models/customer.model';
 import { CustomerService } from '../../../services/customer.service';
 
@@ -27,9 +27,15 @@ export class CustomerList implements OnInit {
   constructor(private customerService: CustomerService) {}
 
   ngOnInit(): void {
+    this.loadCustomers();
+  }
+
+  loadCustomers(): void {
     this.customers$ = this.customerService.getCustomers().pipe(
-      tap(list => this.allCustomers = list),
-      map(list => list)
+      map(list => {
+        this.allCustomers = list;
+        return list;
+      })
     );
   }
 
@@ -69,9 +75,16 @@ export class CustomerList implements OnInit {
 
   deleteCustomer(id: number): void {
     if (confirm('Sind Sie sicher, dass Sie diesen Kunden löschen möchten?')) {
-      this.customerService.deleteCustomer(id);
-      this.allCustomers = this.allCustomers.filter(c => c.customerId !== id);
-      this.customers$ = of(this.allCustomers);
+      this.customerService.deleteCustomer(id).subscribe({
+        next: () => {
+          console.log('Kunde gelöscht');
+          this.loadCustomers(); // Liste neu laden vom Server
+        },
+        error: (err) => {
+          console.error('Fehler beim Löschen:', err);
+          alert('Fehler beim Löschen');
+        }
+      });
     }
   }
 

@@ -15,25 +15,12 @@ export class VehicleForm implements OnInit, OnChanges {
   @Input() editId = 0;
   form!: FormGroup;
 
-  // Vordefinierte Ausstattungsoptionen
   availableEquipment = [
-    'Anhängerkupplung',
-    'Panoramadach', 
-    'Ledersitze',
-    'Klimaautomatik',
-    'Navigationssystem',
-    'Sitzheizung',
-    'Automatikgetriebe',
-    'Xenon-Scheinwerfer',
-    'Start-Stop-System',
-    'Bluetooth',
-    'Tempomat',
-    'Einparkhilfe',
-    'Multifunktionslenkrad',
-    'Allradantrieb',
-    'Sportpaket',
-    'Metallic-Lackierung',
-    'CarPlay'
+    'Anhängerkupplung', 'Panoramadach', 'Ledersitze', 'Klimaautomatik',
+    'Navigationssystem', 'Sitzheizung', 'Automatikgetriebe', 'Xenon-Scheinwerfer',
+    'Start-Stop-System', 'Bluetooth', 'Tempomat', 'Einparkhilfe',
+    'Multifunktionslenkrad', 'Allradantrieb', 'Sportpaket', 
+    'Metallic-Lackierung', 'CarPlay'
   ];
 
   constructor(private fb: FormBuilder, private vs: VehicleService) {}
@@ -47,10 +34,9 @@ export class VehicleForm implements OnInit, OnChanges {
       initialRegistration: [''],
       color: [''],
       status: ['Verfügbar', Validators.required],
-      ausstattung: this.fb.array([]) // FormArray für dynamische Ausstattung
+      ausstattung: this.fb.array([])
     });
 
-    // Falls editId schon gesetzt ist, direkt laden
     if (this.editId > 0) {
       this.loadVehicle(this.editId);
     }
@@ -67,7 +53,6 @@ export class VehicleForm implements OnInit, OnChanges {
     }
   }
 
-  // FormArray Getter für Template
   get ausstattungArray(): FormArray {
     return this.form.get('ausstattung') as FormArray;
   }
@@ -85,7 +70,6 @@ export class VehicleForm implements OnInit, OnChanges {
           status: v.status
         });
 
-        // Ausstattung in FormArray laden
         this.clearAusstattung();
         v.ausstattung.forEach(item => {
           this.addAusstattungItem(item);
@@ -94,27 +78,22 @@ export class VehicleForm implements OnInit, OnChanges {
     });
   }
 
-  // Ausstattungsmerkmal hinzufügen
   addAusstattungItem(value: string = ''): void {
     const ausstattungControl = new FormControl(value, Validators.required);
     this.ausstattungArray.push(ausstattungControl);
   }
 
-  // Ausstattungsmerkmal entfernen
   removeAusstattungItem(index: number): void {
     this.ausstattungArray.removeAt(index);
   }
 
-  // Alle Ausstattung löschen
   clearAusstattung(): void {
     while (this.ausstattungArray.length !== 0) {
       this.ausstattungArray.removeAt(0);
     }
   }
 
-  // Vordefinierte Ausstattung hinzufügen
   addPredefinedEquipment(equipment: string): void {
-    // Prüfen, ob bereits vorhanden
     const existingValues = this.ausstattungArray.value;
     if (!existingValues.includes(equipment)) {
       this.addAusstattungItem(equipment);
@@ -131,17 +110,31 @@ export class VehicleForm implements OnInit, OnChanges {
     const { id, ...vehicleData } = formValue;
 
     if (this.editId > 0) {
-      // Update bestehender Fahrzeug
-      this.vs.updateVehicle(formValue as Vehicle);
-      alert('Fahrzeug aktualisiert');
+      // UPDATE
+      this.vs.updateVehicle(formValue as Vehicle).subscribe({
+        next: () => {
+          alert('Fahrzeug aktualisiert');
+          this.resetForm();
+        },
+        error: (err) => {
+          console.error('Fehler:', err);
+          alert('Fehler beim Aktualisieren');
+        }
+      });
     } else {
-      // Neues Fahrzeug
+      // CREATE
       const newVehicle = vehicleData as Omit<Vehicle, 'id'>;
-      this.vs.addVehicle(newVehicle);
-      alert('Neues Fahrzeug hinzugefügt');
+      this.vs.addVehicle(newVehicle).subscribe({
+        next: (created) => {
+          alert('Neues Fahrzeug hinzugefügt');
+          this.resetForm();
+        },
+        error: (err) => {
+          console.error('Fehler:', err);
+          alert('Fehler beim Erstellen');
+        }
+      });
     }
-
-    this.resetForm();
   }
 
   resetForm(): void {
@@ -155,7 +148,6 @@ export class VehicleForm implements OnInit, OnChanges {
       status: 'Verfügbar'
     });
     this.clearAusstattung();
-    // Mindestens ein Ausstattungsfeld hinzufügen
     this.addAusstattungItem();
   }
 
@@ -171,13 +163,11 @@ export class VehicleForm implements OnInit, OnChanges {
     });
   }
 
-  // Hilfsmethode für Template: Prüfen ob Feld ungültig und berührt
   isFieldInvalid(fieldName: string): boolean {
     const field = this.form.get(fieldName);
     return field ? field.invalid && field.touched : false;
   }
 
-  // Hilfsmethode für Template: Fehlermeldung abrufen
   getFieldError(fieldName: string): string {
     const field = this.form.get(fieldName);
     if (field?.errors && field.touched) {

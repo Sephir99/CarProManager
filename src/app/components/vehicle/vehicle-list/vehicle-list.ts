@@ -1,7 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Observable, of, tap, map } from 'rxjs';
+import { Observable, of, map } from 'rxjs';
 import { Vehicle } from '../../../models/vehicle.model';
 import { VehicleService } from '../../../services/vehicle.service';
 import { AsyncPipe } from '@angular/common';
@@ -29,29 +29,31 @@ export class VehicleList implements OnInit {
   constructor(private vehicleService: VehicleService) {}
 
   ngOnInit(): void {
+    this.loadVehicles();
+  }
+
+  loadVehicles(): void {
     this.vehicles$ = this.vehicleService.getVehicles().pipe(
-      tap(list => this.allVehicles = list),
-      map(list => list)
+      map(list => {
+        this.allVehicles = list;
+        return list;
+      })
     );
   }
 
   applyFilter(): void {
     const filtered = this.allVehicles.filter(v => {
-      const matchesId = this.filter.id
-        ? v.id === +this.filter.id
+      const matchesId = this.filter.id ? v.id === +this.filter.id : true;
+      const matchesMake = this.filter.make 
+        ? v.make.toLowerCase().includes(this.filter.make.toLowerCase()) 
         : true;
-      const matchesMake = this.filter.make
-        ? v.make.toLowerCase().includes(this.filter.make.toLowerCase())
+      const matchesModel = this.filter.model 
+        ? v.model.toLowerCase().includes(this.filter.model.toLowerCase()) 
         : true;
-      const matchesModel = this.filter.model
-        ? v.model.toLowerCase().includes(this.filter.model.toLowerCase())
+      const matchesColor = this.filter.color 
+        ? (v.color || '').toLowerCase().includes(this.filter.color.toLowerCase()) 
         : true;
-      const matchesColor = this.filter.color
-        ? (v.color || '').toLowerCase().includes(this.filter.color.toLowerCase())
-        : true;
-      const matchesStatus = this.filter.status
-        ? v.status === this.filter.status
-        : true;
+      const matchesStatus = this.filter.status ? v.status === this.filter.status : true;
       
       return matchesId && matchesMake && matchesModel && matchesColor && matchesStatus;
     });
@@ -65,10 +67,16 @@ export class VehicleList implements OnInit {
 
   deleteVehicle(id: number): void {
     if (confirm('Sind Sie sicher, dass Sie dieses Fahrzeug löschen möchten?')) {
-      this.vehicleService.deleteVehicle(id);
-      // Aktualisiere lokale Liste
-      this.allVehicles = this.allVehicles.filter(v => v.id !== id);
-      this.vehicles$ = of(this.allVehicles);
+      this.vehicleService.deleteVehicle(id).subscribe({
+        next: () => {
+          console.log('Fahrzeug gelöscht');
+          this.loadVehicles(); // Liste neu laden
+        },
+        error: (err) => {
+          console.error('Fehler beim Löschen:', err);
+          alert('Fehler beim Löschen');
+        }
+      });
     }
   }
 
@@ -77,29 +85,28 @@ export class VehicleList implements OnInit {
   }
 
   changeStatus(vehicleId: number, newStatus: 'Verfügbar' | 'Reserviert' | 'Verkauft'): void {
-    this.vehicleService.updateVehicleStatus(vehicleId, newStatus);
-    // Aktualisiere lokale Liste
-    const vehicle = this.allVehicles.find(v => v.id === vehicleId);
-    if (vehicle) {
-      vehicle.status = newStatus;
-      this.vehicles$ = of([...this.allVehicles]);
-    }
+    this.vehicleService.updateVehicleStatus(vehicleId, newStatus).subscribe({
+      next: () => {
+        console.log('Status geändert');
+        this.loadVehicles(); // Liste neu laden
+      },
+      error: (err) => {
+        console.error('Fehler beim Statuswechsel:', err);
+        alert('Fehler beim Statuswechsel');
+      }
+    });
   }
 
+  // Export-Methoden bleiben gleich...
   exportCsv(): void {
     const header = ['id', 'customerId', 'make', 'model', 'initialRegistration', 'color', 'status', 'ausstattung'];
-    this.vehicles$.pipe(tap(), map(list => {
+    this.vehicles$.pipe(map(list => {
       const csvRows = [
         header.join(';'),
         ...list.map(v => [
-          v.id,
-          v.customerId,
-          `"${v.make}"`,
-          `"${v.model}"`,
-          v.initialRegistration || '',
-          `"${v.color || ''}"`,
-          `"${v.status}"`,
-          `"${v.ausstattung.join(', ')}"`
+          v.id, v.customerId, `"${v.make}"`, `"${v.model}"`,
+          v.initialRegistration || '', `"${v.color || ''}"`,
+          `"${v.status}"`, `"${v.ausstattung.join(', ')}"`
         ].join(';'))
       ];
       const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8' });
@@ -113,7 +120,7 @@ export class VehicleList implements OnInit {
   }
 
   exportJson(): void {
-    this.vehicles$.pipe(tap(), map(list => {
+    this.vehicles$.pipe(map(list => {
       const jsonData = JSON.stringify(list, null, 2);
       const blob = new Blob([jsonData], { type: 'application/json' });
       const url = window.URL.createObjectURL(blob);
@@ -126,7 +133,7 @@ export class VehicleList implements OnInit {
   }
 
   exportXml(): void {
-    this.vehicles$.pipe(tap(), map(list => {
+    this.vehicles$.pipe(map(list => {
       let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<vehicles>\n';
       list.forEach(vehicle => {
         xml += '  <vehicle>\n';

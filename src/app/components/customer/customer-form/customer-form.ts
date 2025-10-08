@@ -31,12 +31,11 @@ export class CustomerForm implements OnInit, OnChanges {
     });
 
     if (this.editId > 0) {
-        this.loadCustomer(this.editId);
-      }
+      this.loadCustomer(this.editId);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Sicherstellen, dass form existiert und editId sich geändert hat
     if (changes['editId'] && this.form) {
       const id = changes['editId'].currentValue;
       if (id > 0) {
@@ -58,17 +57,36 @@ export class CustomerForm implements OnInit, OnChanges {
   submit(): void {
     if (this.form.invalid) return;
   
-    const formValue = this.form.value;  // hat auch customerId
-    const { customerId, ...customerData } = formValue;  // ID herausnehmen
+    const formValue = this.form.value;
+    const { customerId, ...customerData } = formValue;
     const newCustomer = customerData as Omit<Customer, 'customerId'>;
   
     if (customerId === 0) {
-      this.cs.addCustomer(newCustomer);
+      // CREATE
+      this.cs.addCustomer(newCustomer).subscribe({
+        next: (created) => {
+          console.log('Kunde erstellt:', created);
+          alert('Kunde gespeichert');
+          this.form.reset({ customerId: 0, newsletter: false });
+        },
+        error: (err) => {
+          console.error('Fehler beim Erstellen:', err);
+          alert('Fehler beim Speichern');
+        }
+      });
     } else {
-      this.cs.updateCustomer(formValue as Customer);
+      // UPDATE
+      this.cs.updateCustomer(formValue as Customer).subscribe({
+        next: () => {
+          console.log('Kunde aktualisiert');
+          alert('Kunde aktualisiert');
+          this.form.reset({ customerId: 0, newsletter: false });
+        },
+        error: (err) => {
+          console.error('Fehler beim Aktualisieren:', err);
+          alert('Fehler beim Aktualisieren');
+        }
+      });
     }
-  
-    this.form.reset({ customerId: 0, newsletter: false });
-    alert('Kunde gespeichert');
   }
 }
