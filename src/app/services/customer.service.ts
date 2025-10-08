@@ -1,80 +1,108 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Customer } from '../models/customer.model';
+import { environment } from '../environments/environment';
+
+// Backend DTOs
+interface BackendCustomer {
+  id: number;
+  firstName: string;
+  lastName: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  phoneNumber: string;
+  email: string;
+  newsletterOptIn: boolean;
+}
+
+interface CreateCustomerDto {
+  firstName: string;
+  lastName: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  phoneNumber: string;
+  email: string;
+  newsletterOptIn: boolean;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class CustomerService {
+  private apiUrl = `${environment.apiUrl}/customers`;
 
-  private customers: Customer[] = [
-    { 
-        customerId: 1, 
-        firstName: 'Max', 
-        lastName: 'Mustermann', 
-        email: 'max@example.com', 
-        newsletter: true 
-    },
-    {
-        customerId: 2,
-        firstName: 'Mike',
-        lastName: 'Fast',
-        email: 'mike.fast@ProCar.com',
-        phoneNumber: '012485123',
-        street: 'BigStreet 123',
-        zipCode: 12412,
-        city: 'Brunswick',
-        newsletter: false
-    },
-    {
-        customerId: 3,
-        firstName: 'Mikael',
-        lastName: 'Fastovic',
-        email: 'faster.mike@ProCar.com',
-        phoneNumber: '01215123',
-        street: 'SmallStreet 12',
-        zipCode: 12413,
-        city: 'Brunswaick',
-        newsletter: true
-    }
-  ];
+  constructor(private http: HttpClient) { }
 
-  private customersSubject = new BehaviorSubject<Customer[]>(this.customers);
+  // Mapping: Backend → Frontend
+  private mapToFrontend(backend: BackendCustomer): Customer {
+    return {
+      customerId: backend.id,
+      firstName: backend.firstName,
+      lastName: backend.lastName,
+      email: backend.email,
+      phoneNumber: backend.phoneNumber || undefined,
+      street: backend.street || undefined,
+      zipCode: backend.postalCode ? parseInt(backend.postalCode) : undefined,
+      city: backend.city || undefined,
+      newsletter: backend.newsletterOptIn
+    };
+  }
 
+  // Mapping: Frontend → Backend
+  private mapToBackend(frontend: Omit<Customer, 'customerId'>): CreateCustomerDto {
+    return {
+      firstName: frontend.firstName,
+      lastName: frontend.lastName,
+      street: frontend.street || '',
+      city: frontend.city || '',
+      postalCode: frontend.zipCode?.toString() || '',
+      phoneNumber: frontend.phoneNumber || '',
+      email: frontend.email,
+      newsletterOptIn: frontend.newsletter
+    };
+  }
+
+  // READ - Alle Kunden
   getCustomers(): Observable<Customer[]> {
-    return this.customersSubject.asObservable();
+    return this.http.get<BackendCustomer[]>(this.apiUrl).pipe(
+      map(customers => customers.map(c => this.mapToFrontend(c)))
+    );
   }
 
+  // READ - Einzelner Kunde
   getCustomerById(id: number): Observable<Customer | undefined> {
-    const customer = this.customers.find(c => c.customerId === id);
-    return of(customer);
+    return this.http.get<BackendCustomer>(`${this.apiUrl}/${id}`).pipe(
+      map(c => this.mapToFrontend(c))
+    );
   }
 
-  addCustomer(customer: Omit<Customer, 'customerId'>): void {
-    // Automatische ID-Generierung
-    const maxId = this.customers.length > 0 ? Math.max(...this.customers.map(c => c.customerId)) : 0;
-    const newCustomer: Customer = { ...customer, customerId: maxId + 1 };
-    
-    this.customers.push(newCustomer);
-    this.customersSubject.next([...this.customers]); // Spread für bessere Change Detection
+  // CREATE - Neuer Kunde
+  addCustomer(customer: Omit<Customer, 'customerId'>): Observable<Customer> {
+    const dto = this.mapToBackend(customer);
+    return this.http.post<BackendCustomer>(this.apiUrl, dto).pipe(
+      map(c => this.mapToFrontend(c))
+    );
   }
 
-  updateCustomer(updatedCustomer: Customer): void {
-    const index = this.customers.findIndex(c => c.customerId === updatedCustomer.customerId);
-    if (index !== -1) {
-      this.customers[index] = updatedCustomer;
-      this.customersSubject.next([...this.customers]);
-    }
-  }
-  
-  deleteCustomer(id: number): void {
-    this.customers = this.customers.filter(c => c.customerId !== id);
-    this.customersSubject.next([...this.customers]);
+  // UPDATE - Kunde aktualisieren
+  updateCustomer(updatedCustomer: Customer): Observable<void> {
+    const dto = this.mapToBackend(updatedCustomer);
+    return this.http.put<void>(`${this.apiUrl}/${updatedCustomer.customerId}`, dto);
   }
 
+  // DELETE - Kunde löschen
+  deleteCustomer(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  // FILTER - Newsletter-Abonnenten
   getNewsletterSubscribers(): Observable<Customer[]> {
-    const subscribers = this.customers.filter(c => c.newsletter);
-    return of(subscribers);
+    return this.getCustomers().pipe(
+      map(customers => customers.filter(c => c.newsletter))
+    );
   }
-  
 }

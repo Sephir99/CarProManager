@@ -1,153 +1,164 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { Vehicle } from '../models/vehicle.model';
+import { environment } from '../environments/environment';
+import { map, switchMap } from 'rxjs/operators';
+
+// Backend DTOs
+interface BackendVehicle {
+  id: number;
+  brand: string;
+  model: string;
+  firstRegistration: string;
+  color: string;
+  status: 0 | 1 | 2; // Available, Reserved, Sold
+  equipmentFeatures: string[];
+}
+
+interface CreateVehicleDto {
+  brand: string;
+  model: string;
+  firstRegistration: string;
+  color: string;
+  status: 0 | 1 | 2;
+  equipmentFeatureIds: number[];
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class VehicleService {
+  private apiUrl = `${environment.apiUrl}/vehicles`;
 
-  // Mock-Daten für Fahrzeuge
-  private vehicles: Vehicle[] = [
-    {
-      id: 1,
-      customerId: 1, // Gehört zu Max Mustermann
-      make: 'BMW',
-      model: 'X3',
-      initialRegistration: '2020-03-15',
-      color: 'Schwarz',
-      status: 'Verfügbar',
-      ausstattung: ['Anhängerkupplung', 'Panoramadach', 'Ledersitze']
-    },
-    {
-      id: 2,
-      customerId: 2, // Gehört zu Mike Fast
-      make: 'Audi',
-      model: 'A4',
-      initialRegistration: '2019-07-22',
-      color: 'Weiß',
-      status: 'Verkauft',
-      ausstattung: ['Klimaautomatik', 'Navigationssystem']
-    },
-    {
-      id: 3,
-      customerId: 1, // Auch Max Mustermann
-      make: 'Mercedes',
-      model: 'C-Klasse',
-      initialRegistration: '2021-11-08',
-      color: 'Silber',
-      status: 'Reserviert',
-      ausstattung: ['Sitzheizung', 'Automatikgetriebe', 'Xenon-Scheinwerfer']
-    },
-    {
-      id: 4,
-      customerId: 0, // Noch kein Kunde zugeordnet
-      make: 'Volkswagen',
-      model: 'Golf',
-      initialRegistration: '2022-01-12',
-      color: 'Rot',
-      status: 'Verfügbar',
-      ausstattung: ['Start-Stop-System', 'Bluetooth']
-    },
-    {
-      id: 5,
-      customerId: 3, // Gehört zu Mikael Fastovic
-      make: 'Ford',
-      model: 'Focus',
-      initialRegistration: '2018-09-05',
-      color: 'Blau',
-      status: 'Verfügbar',
-      ausstattung: ['Tempomat', 'Einparkhilfe', 'Multifunktionslenkrad']
+  constructor(private http: HttpClient) { }
+
+  // Mapping: Backend Status → Frontend Status
+  private mapStatusToFrontend(backendStatus: 0 | 1 | 2): 'Verfügbar' | 'Reserviert' | 'Verkauft' {
+    switch (backendStatus) {
+      case 0: return 'Verfügbar';
+      case 1: return 'Reserviert';
+      case 2: return 'Verkauft';
+      default: return 'Verfügbar';
     }
-  ];
+  }
 
-  private vehiclesSubject = new BehaviorSubject<Vehicle[]>(this.vehicles);
+  // Mapping: Frontend Status → Backend Status
+  private mapStatusToBackend(frontendStatus: 'Verfügbar' | 'Reserviert' | 'Verkauft'): 0 | 1 | 2 {
+    switch (frontendStatus) {
+      case 'Verfügbar': return 0;
+      case 'Reserviert': return 1;
+      case 'Verkauft': return 2;
+      default: return 0;
+    }
+  }
+
+  // Mapping: Backend → Frontend
+  private mapToFrontend(backend: BackendVehicle): Vehicle {
+    return {
+      id: backend.id,
+      customerId: 0, // Backend hat keine customerId - muss über Contracts gelöst werden
+      make: backend.brand,
+      model: backend.model,
+      initialRegistration: backend.firstRegistration,
+      color: backend.color,
+      status: this.mapStatusToFrontend(backend.status),
+      ausstattung: backend.equipmentFeatures
+    };
+  }
+
+  // Mapping: Frontend → Backend (für Create/Update)
+  private mapToBackend(frontend: Omit<Vehicle, 'id' | 'customerId'>): Omit<CreateVehicleDto, 'equipmentFeatureIds'> {
+    return {
+      brand: frontend.make,
+      model: frontend.model,
+      firstRegistration: frontend.initialRegistration || new Date().toISOString(),
+      color: frontend.color || '',
+      status: this.mapStatusToBackend(frontend.status)
+    };
+  }
 
   // READ - Alle Fahrzeuge
   getVehicles(): Observable<Vehicle[]> {
-    return this.vehiclesSubject.asObservable();
+    return this.http.get<BackendVehicle[]>(this.apiUrl).pipe(
+      map(vehicles => vehicles.map(v => this.mapToFrontend(v)))
+    );
   }
 
-  // READ - Einzelnes Fahrzeug per ID
+  // READ - Einzelnes Fahrzeug
   getVehicleById(id: number): Observable<Vehicle | undefined> {
-    const vehicle = this.vehicles.find(v => v.id === id);
-    return of(vehicle);
+    return this.http.get<BackendVehicle>(`${this.apiUrl}/${id}`).pipe(
+      map(v => this.mapToFrontend(v))
+    );
   }
 
-  // READ - Fahrzeuge nach Kunde filtern
+  // READ - Nach customerId filtern (nur Frontend-Filterung, da Backend keine customerId hat)
   getVehiclesByCustomerId(customerId: number): Observable<Vehicle[]> {
-    const customerVehicles = this.vehicles.filter(v => v.customerId === customerId);
-    return of(customerVehicles);
+    return this.getVehicles().pipe(
+      map(vehicles => vehicles.filter(v => v.customerId === customerId))
+    );
   }
 
-  // READ - Fahrzeuge nach Status filtern
+  // READ - Nach Status filtern
   getVehiclesByStatus(status: 'Verfügbar' | 'Reserviert' | 'Verkauft'): Observable<Vehicle[]> {
-    const filteredVehicles = this.vehicles.filter(v => v.status === status);
-    return of(filteredVehicles);
+    return this.getVehicles().pipe(
+      map(vehicles => vehicles.filter(v => v.status === status))
+    );
   }
 
-  // CREATE - Neues Fahrzeug hinzufügen
-  addVehicle(vehicle: Omit<Vehicle, 'id'>): void {
-    const maxId = this.vehicles.length > 0 ? Math.max(...this.vehicles.map(v => v.id)) : 0;
-    const newVehicle: Vehicle = { ...vehicle, id: maxId + 1 };
-    this.vehicles.push(newVehicle);
-    this.vehiclesSubject.next([...this.vehicles]);
+  // CREATE - Neues Fahrzeug
+  addVehicle(vehicle: Omit<Vehicle, 'id'>): Observable<Vehicle> {
+    const dto: CreateVehicleDto = {
+      ...this.mapToBackend(vehicle),
+      equipmentFeatureIds: [] // Leer, da Backend EquipmentFeature IDs erwartet
+    };
+    return this.http.post<BackendVehicle>(this.apiUrl, dto).pipe(
+      map(v => this.mapToFrontend(v))
+    );
   }
 
   // UPDATE - Fahrzeug aktualisieren
-  updateVehicle(updatedVehicle: Vehicle): void {
-    const index = this.vehicles.findIndex(v => v.id === updatedVehicle.id);
-    if (index !== -1) {
-      this.vehicles[index] = updatedVehicle;
-      this.vehiclesSubject.next([...this.vehicles]);
-    }
+  updateVehicle(updatedVehicle: Vehicle): Observable<void> {
+    const dto: CreateVehicleDto = {
+      ...this.mapToBackend(updatedVehicle),
+      equipmentFeatureIds: []
+    };
+    return this.http.put<void>(`${this.apiUrl}/${updatedVehicle.id}`, dto);
   }
 
   // DELETE - Fahrzeug löschen
-  deleteVehicle(id: number): void {
-    this.vehicles = this.vehicles.filter(v => v.id !== id);
-    this.vehiclesSubject.next([...this.vehicles]);
+  deleteVehicle(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
   // UTILITY - Fahrzeugstatus ändern
-  updateVehicleStatus(id: number, status: 'Verfügbar' | 'Reserviert' | 'Verkauft'): void {
-    const vehicle = this.vehicles.find(v => v.id === id);
-    if (vehicle) {
-      vehicle.status = status;
-      this.vehiclesSubject.next([...this.vehicles]);
-    }
+  // UTILITY - Fahrzeugstatus ändern
+  updateVehicleStatus(id: number, status: 'Verfügbar' | 'Reserviert' | 'Verkauft'): Observable<void> {
+    return this.getVehicleById(id).pipe(
+      switchMap(vehicle => {
+        if (!vehicle) {
+          throw new Error('Vehicle not found');
+        }
+        vehicle.status = status;
+        return this.updateVehicle(vehicle);
+      })
+    );
   }
 
-  // UTILITY - Ausstattungsmerkmal hinzufügen
-  addEquipment(vehicleId: number, equipment: string): void {
-    const vehicle = this.vehicles.find(v => v.id === vehicleId);
-    if (vehicle && !vehicle.ausstattung.includes(equipment)) {
-      vehicle.ausstattung.push(equipment);
-      this.vehiclesSubject.next([...this.vehicles]);
-    }
-  }
-
-  // UTILITY - Ausstattungsmerkmal entfernen
-  removeEquipment(vehicleId: number, equipment: string): void {
-    const vehicle = this.vehicles.find(v => v.id === vehicleId);
-    if (vehicle) {
-      vehicle.ausstattung = vehicle.ausstattung.filter(e => e !== equipment);
-      this.vehiclesSubject.next([...this.vehicles]);
-    }
-  }
 
   // FILTER - Verfügbare Fahrzeuge
   getAvailableVehicles(): Observable<Vehicle[]> {
     return this.getVehiclesByStatus('Verfügbar');
   }
 
-  // STATISTICS - Fahrzeuganzahl nach Status
+  // STATISTICS - Anzahl nach Status
   getVehicleCountByStatus(): Observable<{[key: string]: number}> {
-    const counts = {
-      'Verfügbar': this.vehicles.filter(v => v.status === 'Verfügbar').length,
-      'Reserviert': this.vehicles.filter(v => v.status === 'Reserviert').length,
-      'Verkauft': this.vehicles.filter(v => v.status === 'Verkauft').length
-    };
-    return of(counts);
+    return this.getVehicles().pipe(
+      map(vehicles => ({
+        'Verfügbar': vehicles.filter(v => v.status === 'Verfügbar').length,
+        'Reserviert': vehicles.filter(v => v.status === 'Reserviert').length,
+        'Verkauft': vehicles.filter(v => v.status === 'Verkauft').length
+      }))
+    );
   }
 }
