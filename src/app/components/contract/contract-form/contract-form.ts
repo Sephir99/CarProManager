@@ -81,10 +81,28 @@ export class ContractForm implements OnInit, OnChanges {
       this.form.markAllAsTouched();
       return;
     }
-    const data = this.form.value as Contract;
-    if (this.editId > 0) this.cs.updateContract(data);
-    else this.cs.addContract(data);
-    this.reset();
+
+    const formValue = this.form.getRawValue();
+    const data: Omit<Contract, 'contractId'> = {
+      customerId: formValue.customerId,
+      vehicleId: formValue.vehicleId,
+      date: formValue.date,
+      price: formValue.price,
+      notes: formValue.notes
+    };
+
+    if (this.editId > 0) {
+      const updateData = { ...data, contractId: this.editId } as Contract;
+      this.cs.updateContract(updateData).subscribe({
+        next: () => {
+          this.reset();
+        }});
+    } else {
+      this.cs.addContract(data).subscribe({
+        next: (result) => {
+          this.reset();
+        }});
+    }
   }
 
   reset(): void {

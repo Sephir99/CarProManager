@@ -24,10 +24,15 @@ export class ContractList implements OnInit {
   }
 
   delete(id: number): void {
-    if (confirm('Vertrag löschen?')) {
-      this.cs.deleteContract(id);
-      this.reload();
+    if (!confirm('Vertrag wirklich löschen?')) {
+      return;
     }
+
+    this.cs.deleteContract(id).subscribe({
+      next: () => {
+        this.reload();
+      }
+    });
   }
 
   edit(id: number): void {
