@@ -1,7 +1,6 @@
 <div class="vehicle-container">
   <h2>Fahrzeugliste</h2>
 
-  <!-- Filter Panel -->
   <div class="filter-panel">
     <input type="text" placeholder="Fahrzeug-ID" [(ngModel)]="filter.id" />
     <input type="text" placeholder="Marke" [(ngModel)]="filter.make" />
@@ -17,14 +16,12 @@
     <button class="btn-reset" (click)="resetFilter()">Zurücksetzen</button>
   </div>
 
-  <!-- Export Buttons -->
   <div class="actions">
     <button class="btn-export-csv" (click)="exportCsv()">CSV exportieren</button>
     <button class="btn-export-json" (click)="exportJson()">JSON exportieren</button>
     <button class="btn-export-xml" (click)="exportXml()">XML exportieren</button>
   </div>
 
-  <!-- Fahrzeug Tabelle -->
   <table class="vehicle-table">
     <thead>
       <tr>
@@ -57,8 +54,11 @@
           </td>
           <td class="equipment-cell">
             <div class="equipment-tags">
-              @for (item of vehicle.ausstattung; track item) {
-                <span class="equipment-tag">{{ item }}</span>
+              @for (featureName of vehicle.ausstattung || []; track featureName) {
+                <span class="equipment-tag">{{ featureName }}</span>
+              }
+              @if (!(vehicle.ausstattung && vehicle.ausstattung.length > 0)) {
+                <span class="no-equipment">Keine Ausstattung</span>
               }
             </div>
           </td>
@@ -75,7 +75,6 @@
     </tbody>
   </table>
 
-  <!-- Keine Daten Meldung -->
   @if ((vehicles$ | async)?.length === 0) {
     <div class="no-data">
       <p>Keine Fahrzeuge gefunden.</p>

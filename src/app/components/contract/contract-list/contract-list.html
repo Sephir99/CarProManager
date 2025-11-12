@@ -19,12 +19,12 @@
       </tr>
     </thead>
     <tbody>
-      @for (c of contracts$ | async; track c.contractId) {
+      @for (c of contractsDisplay$ | async; track c.contractId) {
         <tr>
           <td>{{ c.contractId }}</td>
-          <td>{{ c.customerId }}</td>
-          <td>{{ c.vehicleId }}</td>
-          <td>{{ c.date }}</td>
+          <td>{{ c.customerName }}</td>
+          <td>{{ c.vehicleInfo }}</td>
+          <td>{{ c.date | date:'dd.MM.yyyy' }}</td>
           <td>{{ c.price | currency:'EUR' }}</td>
           <td class="actions-cell">
             <button class="btn-edit" (click)="edit(c.contractId)">✏️ Bearbeiten</button>
@@ -35,7 +35,7 @@
     </tbody>
   </table>
 
-  @if ((contracts$ | async)?.length === 0) {
+  @if ((contractsDisplay$ | async)?.length === 0) {
     <div class="no-data"><p>Keine Verträge gefunden.</p></div>
   }
 </div>

@@ -5,7 +5,6 @@ import { map } from 'rxjs/operators';
 import { Contract } from '../models/contract.model';
 import { environment } from '../environments/environment';
 
-// Backend DTOs (wenn PurchaseContract Controller existiert)
 interface BackendContract {
   id: number;
   customerId: number;

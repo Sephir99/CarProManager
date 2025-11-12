@@ -16,6 +16,7 @@ import { AsyncPipe } from '@angular/common';
 export class VehicleList implements OnInit {
   vehicles$!: Observable<Vehicle[]>;
   allVehicles: Vehicle[] = [];
+  
   filter = { 
     id: '', 
     make: '', 
@@ -33,12 +34,10 @@ export class VehicleList implements OnInit {
   }
 
   loadVehicles(): void {
-    this.vehicles$ = this.vehicleService.getVehicles().pipe(
-      map(list => {
-        this.allVehicles = list;
-        return list;
-      })
-    );
+    this.vehicleService.getVehicles().subscribe(list => {
+      this.allVehicles = list;
+      this.vehicles$ = of(list);
+    });
   }
 
   applyFilter(): void {
@@ -70,7 +69,7 @@ export class VehicleList implements OnInit {
       this.vehicleService.deleteVehicle(id).subscribe({
         next: () => {
           console.log('Fahrzeug gelöscht');
-          this.loadVehicles(); // Liste neu laden
+          this.loadVehicles();
         },
         error: (err) => {
           console.error('Fehler beim Löschen:', err);
@@ -88,7 +87,7 @@ export class VehicleList implements OnInit {
     this.vehicleService.updateVehicleStatus(vehicleId, newStatus).subscribe({
       next: () => {
         console.log('Status geändert');
-        this.loadVehicles(); // Liste neu laden
+        this.loadVehicles();
       },
       error: (err) => {
         console.error('Fehler beim Statuswechsel:', err);
@@ -97,16 +96,15 @@ export class VehicleList implements OnInit {
     });
   }
 
-  // Export-Methoden bleiben gleich...
   exportCsv(): void {
-    const header = ['id', 'customerId', 'make', 'model', 'initialRegistration', 'color', 'status', 'ausstattung'];
+    const header = ['id', 'customerId', 'make', 'model', 'initialRegistration', 'color', 'status', 'equipmentFeatures'];
     this.vehicles$.pipe(map(list => {
       const csvRows = [
         header.join(';'),
         ...list.map(v => [
           v.id, v.customerId, `"${v.make}"`, `"${v.model}"`,
           v.initialRegistration || '', `"${v.color || ''}"`,
-          `"${v.status}"`, `"${v.ausstattung.join(', ')}"`
+          `"${v.status}"`, `"${(v.ausstattung || []).join(', ')}"`
         ].join(';'))
       ];
       const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8' });
@@ -144,11 +142,11 @@ export class VehicleList implements OnInit {
         xml += `    <initialRegistration>${vehicle.initialRegistration || ''}</initialRegistration>\n`;
         xml += `    <color>${vehicle.color || ''}</color>\n`;
         xml += `    <status>${vehicle.status}</status>\n`;
-        xml += '    <ausstattung>\n';
-        vehicle.ausstattung.forEach(item => {
-          xml += `      <item>${item}</item>\n`;
+        xml += '    <equipmentFeatures>\n';
+        (vehicle.ausstattung || []).forEach(name => {
+          xml += `      <feature>${name}</feature>\n`;
         });
-        xml += '    </ausstattung>\n';
+        xml += '    </equipmentFeatures>\n';
         xml += '  </vehicle>\n';
       });
       xml += '</vehicles>';

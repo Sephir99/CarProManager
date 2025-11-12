@@ -2,7 +2,11 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, FormArray, FormControl } from '@angular/forms';
 import { VehicleService } from '../../../services/vehicle.service';
+import { CustomerService } from '../../../services/customer.service';
 import { Vehicle } from '../../../models/vehicle.model';
+import { Customer } from '../../../models/customer.model';
+import { EquipmentFeature } from '../../../models/equipment-feature.model'; // ✅ NEU
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-vehicle-form',
@@ -15,26 +19,33 @@ export class VehicleForm implements OnInit, OnChanges {
   @Input() editId = 0;
   form!: FormGroup;
 
-  availableEquipment = [
-    'Anhängerkupplung', 'Panoramadach', 'Ledersitze', 'Klimaautomatik',
-    'Navigationssystem', 'Sitzheizung', 'Automatikgetriebe', 'Xenon-Scheinwerfer',
-    'Start-Stop-System', 'Bluetooth', 'Tempomat', 'Einparkhilfe',
-    'Multifunktionslenkrad', 'Allradantrieb', 'Sportpaket', 
-    'Metallic-Lackierung', 'CarPlay'
-  ];
+  customers$!: Observable<Customer[]>;
+  
+  // ✅ NEU: Equipment Features vom Backend
+  availableEquipment: EquipmentFeature[] = [];
 
-  constructor(private fb: FormBuilder, private vs: VehicleService) {}
+  constructor(
+    private fb: FormBuilder, 
+    private vs: VehicleService,
+    private customerService: CustomerService
+  ) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
       id: [0],
-      customerId: [0, Validators.required],
+      customerId: [null, Validators.required],
       make: ['', Validators.required],
       model: ['', Validators.required],
       initialRegistration: [''],
       color: [''],
       status: ['Verfügbar', Validators.required],
-      ausstattung: this.fb.array([])
+      equipmentFeatureIds: this.fb.array([])
+    });
+
+    this.customers$ = this.customerService.getCustomers();
+    
+    this.vs.getEquipmentFeatures().subscribe(features => {
+      this.availableEquipment = features;
     });
 
     if (this.editId > 0) {
@@ -53,8 +64,8 @@ export class VehicleForm implements OnInit, OnChanges {
     }
   }
 
-  get ausstattungArray(): FormArray {
-    return this.form.get('ausstattung') as FormArray;
+  get equipmentFeatureIdsArray(): FormArray {
+    return this.form.get('equipmentFeatureIds') as FormArray;
   }
 
   private loadVehicle(id: number): void {
@@ -70,34 +81,42 @@ export class VehicleForm implements OnInit, OnChanges {
           status: v.status
         });
 
-        this.clearAusstattung();
-        v.ausstattung.forEach(item => {
-          this.addAusstattungItem(item);
-        });
+        this.clearEquipmentFeatures();
+        
+        if (v.equipmentFeatureIds) {
+          v.equipmentFeatureIds.forEach(featureId => {
+            this.addEquipmentFeature(featureId);
+          });
+        }
       }
     });
   }
 
-  addAusstattungItem(value: string = ''): void {
-    const ausstattungControl = new FormControl(value, Validators.required);
-    this.ausstattungArray.push(ausstattungControl);
+  addEquipmentFeature(featureId: number | null = null): void {
+    const control = new FormControl(featureId, Validators.required);
+    this.equipmentFeatureIdsArray.push(control);
   }
 
-  removeAusstattungItem(index: number): void {
-    this.ausstattungArray.removeAt(index);
+  removeEquipmentFeature(index: number): void {
+    this.equipmentFeatureIdsArray.removeAt(index);
   }
 
-  clearAusstattung(): void {
-    while (this.ausstattungArray.length !== 0) {
-      this.ausstattungArray.removeAt(0);
+  clearEquipmentFeatures(): void {
+    while (this.equipmentFeatureIdsArray.length !== 0) {
+      this.equipmentFeatureIdsArray.removeAt(0);
     }
   }
 
-  addPredefinedEquipment(equipment: string): void {
-    const existingValues = this.ausstattungArray.value;
-    if (!existingValues.includes(equipment)) {
-      this.addAusstattungItem(equipment);
+  addPredefinedEquipment(featureId: number): void {
+    const existingValues = this.equipmentFeatureIdsArray.value;
+    if (!existingValues.includes(featureId)) {
+      this.addEquipmentFeature(featureId);
     }
+  }
+
+  getFeatureName(featureId: number): string {
+    const feature = this.availableEquipment.find(f => f.id === featureId);
+    return feature ? feature.name : '';
   }
 
   submit(): void {
@@ -110,7 +129,6 @@ export class VehicleForm implements OnInit, OnChanges {
     const { id, ...vehicleData } = formValue;
 
     if (this.editId > 0) {
-      // UPDATE
       this.vs.updateVehicle(formValue as Vehicle).subscribe({
         next: () => {
           alert('Fahrzeug aktualisiert');
@@ -122,7 +140,6 @@ export class VehicleForm implements OnInit, OnChanges {
         }
       });
     } else {
-      // CREATE
       const newVehicle = vehicleData as Omit<Vehicle, 'id'>;
       this.vs.addVehicle(newVehicle).subscribe({
         next: (created) => {
@@ -140,15 +157,14 @@ export class VehicleForm implements OnInit, OnChanges {
   resetForm(): void {
     this.form.reset({
       id: 0,
-      customerId: 0,
+      customerId: null,
       make: '',
       model: '',
       initialRegistration: '',
       color: '',
       status: 'Verfügbar'
     });
-    this.clearAusstattung();
-    this.addAusstattungItem();
+    this.clearEquipmentFeatures();
   }
 
   private markAllFieldsAsTouched(): void {
